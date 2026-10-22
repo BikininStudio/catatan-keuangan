@@ -74,6 +74,19 @@ body.guest { display: grid; place-items: center; min-height: 100vh; padding: 16p
 @media (max-width: 640px) {
   .bar { padding: 8px 16px; }
   .stat strong { font-size: 1.25rem; }
+  /* Menu HP: baris 1 = nama aplikasi + akun, baris 2 = menu satu baris yang bisa digeser */
+  .bar { gap: 6px 12px; padding-bottom: 6px; min-height: 0; }
+  .bar .brand { flex: 1; }
+  .bar nav { order: 3; flex: 0 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+  .bar nav::-webkit-scrollbar { display: none; }
+  .bar nav a { white-space: nowrap; padding: 6px 10px; }
+  #topbar .who { max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; }
+  #btn-logout { padding: 4px 10px; }
+  main.wrap { padding-bottom: 72px; } /* ruang untuk tombol "Instal aplikasi" */
+  .bar .brand { white-space: nowrap; }
+}
+@media (max-width: 360px) {
+  #topbar .who { display: none; }
 }
 
 /* --- tambahan versi statis (SPA) --- */

@@ -28,6 +28,8 @@ Buka http://localhost:8080 (ES module tidak bisa dibuka lewat klik dua kali file
 2. **Settings -> Pages -> Build and deployment**: Source = Deploy from a branch, Branch = `main`, folder `/ (root)`, Save.
 3. Tunggu 1-2 menit, alamat: `https://USERNAME.github.io/NAMA-REPO/`.
 4. Di Supabase **Authentication -> URL Configuration**, isi **Site URL** dengan alamat itu.
+   Kalau aplikasi dipasang di lebih dari satu alamat, tambahkan semuanya di **Redirect URLs**
+   (mis. `https://USERNAME.github.io/NAMA-REPO/**`) supaya link konfirmasi email kembali ke alamat tempat mendaftar.
 
 ## 5. Mode demo (tombol "Coba demo tanpa daftar")
 Pengunjung masuk sebagai akun tamu anonim. Tiap tamu dapat data contoh sendiri (3 bulan transaksi + anggaran),
@@ -43,13 +45,21 @@ jadi tidak saling melihat atau mengacak data orang lain. Link `.../?demo=1` lang
 
 ## 6. Instal sebagai aplikasi (PWA)
 Aplikasi bisa dipasang seperti aplikasi biasa, dengan ikon sendiri dan jendela tanpa address bar:
-- **Laptop (Chrome/Edge):** klik ikon **Instal** di ujung address bar.
+- **Tombol "Instal aplikasi"** muncul di kanan bawah halaman (Chrome/Edge/Android; di iPhone menampilkan petunjuk).
+- **Laptop (Chrome/Edge):** klik tombol itu, atau ikon **Instal** di ujung address bar.
 - **Android (Chrome):** menu ⋮ -> **Instal aplikasi** / **Tambahkan ke layar utama**.
 - **iPhone (Safari):** tombol Bagikan -> **Tambah ke Layar Utama**.
 
-File PWA: `manifest.webmanifest`, `sw.js`, dan folder `icons/`. Service worker cuma menyimpan file aplikasi;
+File PWA: `manifest.webmanifest`, `sw.js`, `install.js` (tombol instal + pesan offline), dan folder `icons/`. Service worker cuma menyimpan file aplikasi;
 data keuangan (Supabase) selalu diambil langsung dari internet dan tidak disimpan di cache.
 Kalau menambah file JS baru, tambahkan juga ke daftar `SHELL` di `sw.js` dan naikkan nomor `CACHE`.
+
+## 7. Supaya Supabase tidak "tertidur"
+Project Supabase gratis di-pause otomatis bila 7 hari tanpa aktivitas. Workflow
+`.github/workflows/supabase-keepalive.yml` memanggil fungsi `ping()` setiap hari, jadi project tetap aktif.
+- Butuh fungsi `ping()` dari `schema.sql` (jalankan ulang file itu, atau cukup bagian "ping").
+- Kalau ping gagal, workflow berwarna merah dan GitHub mengirim email. Buka dashboard Supabase lalu klik **Restore**.
+- Tes manual: tab **Actions** -> **Supabase keepalive** -> **Run workflow**.
 
 ## Keamanan
 - Anon key memang publik; data dilindungi **Row Level Security**: setiap tabel hanya bisa dibaca/diubah pemilik baris (`user_id = auth.uid()`).

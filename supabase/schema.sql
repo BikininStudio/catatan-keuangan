@@ -218,6 +218,12 @@ language sql stable set search_path = public as $$
   order by c.nama;
 $$;
 
+-- ------------------------------------------ ping (anti project tertidur)
+-- Dipanggil GitHub Actions tiap hari (.github/workflows/supabase-keepalive.yml) supaya project gratis
+-- tidak di-pause karena 7 hari tanpa aktivitas. Tidak membaca data apa pun.
+create or replace function public.ping() returns boolean language sql stable as $$ select true $$;
+grant execute on function public.ping() to anon, authenticated;
+
 revoke execute on function public.ringkasan(date, date), public.ringkasan_bulanan(int),
   public.rekap_kategori(date, date, public.tipe_transaksi), public.anggaran_bulan(int, int) from public, anon;
 grant execute on function public.ringkasan(date, date), public.ringkasan_bulanan(int),

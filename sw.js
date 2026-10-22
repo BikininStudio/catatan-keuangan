@@ -1,6 +1,6 @@
 // Service worker supaya aplikasi bisa diinstal (PWA).
 // Cuma file aplikasi sendiri yang di-cache. Supabase (data keuangan) dan CDN selalu langsung ke internet, nggak pernah disimpan.
-const CACHE = "keuangan-v1";
+const CACHE = "keuangan-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -20,6 +20,7 @@ const SHELL = [
   "./assets/js/views/categories.js",
   "./assets/js/views/budgets.js",
   "./assets/js/views/report.js",
+  "./install.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

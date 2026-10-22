@@ -56,7 +56,11 @@ export async function loginDemo() {
 
 // Mengembalikan true bila akun langsung aktif, false bila perlu konfirmasi email.
 export async function register(namaLengkap, email, password) {
-  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { nama: namaLengkap } } });
+  // Link konfirmasi email kembali ke alamat tempat mendaftar (aplikasi ada di lebih dari satu alamat).
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { nama: namaLengkap }, emailRedirectTo: location.origin + location.pathname },
+  });
   if (error) throw error;
   if (data.user && data.user.identities?.length === 0) throw new Error('Email sudah terdaftar.');
   if (data.session) {
