@@ -29,6 +29,18 @@ Buka http://localhost:8080 (ES module tidak bisa dibuka lewat klik dua kali file
 3. Tunggu 1-2 menit, alamat: `https://USERNAME.github.io/NAMA-REPO/`.
 4. Di Supabase **Authentication -> URL Configuration**, isi **Site URL** dengan alamat itu.
 
+## 5. Mode demo (tombol "Coba demo tanpa daftar")
+Pengunjung masuk sebagai akun tamu anonim. Tiap tamu dapat data contoh sendiri (3 bulan transaksi + anggaran),
+jadi tidak saling melihat atau mengacak data orang lain. Link `.../?demo=1` langsung masuk mode demo.
+1. Jalankan ulang `supabase/schema.sql` di SQL Editor (aman diulang; menambah `seed_demo` dan `hapus_tamu_demo`).
+2. **Authentication -> Sign In / Providers**: aktifkan **Allow anonymous sign-ins**, Save.
+3. Hapus tamu lama otomatis: **Integrations -> Cron** (aktifkan pg_cron) lalu jalankan di SQL Editor:
+   ```sql
+   select cron.schedule('hapus-tamu-demo', '0 3 * * *', 'select public.hapus_tamu_demo()');
+   ```
+4. Opsional, bila ada yang menyalahgunakan: **Authentication -> Rate Limits** (batas sign-in anonim per jam),
+   atau pasang CAPTCHA di **Authentication -> Attack Protection**.
+
 ## Keamanan
 - Anon key memang publik; data dilindungi **Row Level Security**: setiap tabel hanya bisa dibaca/diubah pemilik baris (`user_id = auth.uid()`).
 - Output di-escape (anti XSS), password di-hash oleh Supabase Auth, sesi berakhir setelah 30 menit tidak aktif.

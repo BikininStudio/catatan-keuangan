@@ -79,18 +79,74 @@ create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   insert into profiles (id, nama)
-  values (new.id, coalesce(nullif(trim(new.raw_user_meta_data ->> 'nama'), ''), split_part(new.email, '@', 1)));
+  values (new.id, coalesce(nullif(trim(new.raw_user_meta_data ->> 'nama'), ''), split_part(new.email, '@', 1), 'Tamu Demo'));
 
   insert into categories (user_id, nama, tipe) values
     (new.id, 'Gaji', 'pemasukan'), (new.id, 'Uang Saku', 'pemasukan'), (new.id, 'Lainnya', 'pemasukan'),
     (new.id, 'Makanan', 'pengeluaran'), (new.id, 'Transportasi', 'pengeluaran'), (new.id, 'Tagihan', 'pengeluaran'),
     (new.id, 'Hiburan', 'pengeluaran'), (new.id, 'Lainnya', 'pengeluaran');
+
+  -- Akun tamu (tombol "Coba demo") langsung diisi data contoh.
+  if coalesce(new.is_anonymous, false) then
+    perform seed_demo(new.id);
+  end if;
   return new;
 end $$;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ------------------------------------------------ mode demo (akun tamu)
+-- Data contoh 3 bulan terakhir + anggaran bulan ini untuk akun tamu.
+create or replace function public.seed_demo(p_uid uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  m int;
+  awal date;
+begin
+  for m in 0..2 loop
+    awal := (date_trunc('month', current_date) - make_interval(months => m))::date;
+    insert into transactions (user_id, category_id, tipe, jumlah, tanggal, keterangan)
+    select p_uid, c.id, c.tipe,
+           case when v.tetap then v.jumlah else round(v.jumlah * (1 + 0.08 * ((m + v.hari) % 3 - 1)), -3) end,
+           least(awal + v.hari - 1, current_date), v.ket
+    from (values
+      ('Gaji', 'pemasukan', 4500000, 1, true, 'Gaji bulanan'),
+      ('Lainnya', 'pemasukan', 350000, 18, false, 'Jual barang bekas'),
+      ('Tagihan', 'pengeluaran', 850000, 2, true, 'Kos bulanan'),
+      ('Tagihan', 'pengeluaran', 120000, 5, true, 'Paket internet'),
+      ('Makanan', 'pengeluaran', 420000, 3, false, 'Belanja bulanan'),
+      ('Makanan', 'pengeluaran', 65000, 9, false, 'Makan siang kantor'),
+      ('Makanan', 'pengeluaran', 180000, 16, false, 'Belanja sayur & lauk'),
+      ('Makanan', 'pengeluaran', 95000, 24, false, 'Makan bareng teman'),
+      ('Transportasi', 'pengeluaran', 150000, 4, false, 'Isi bensin'),
+      ('Transportasi', 'pengeluaran', 60000, 13, false, 'Ojek online'),
+      ('Transportasi', 'pengeluaran', 150000, 20, false, 'Isi bensin'),
+      ('Hiburan', 'pengeluaran', 55000, 7, true, 'Langganan streaming'),
+      ('Hiburan', 'pengeluaran', 120000, 21, false, 'Nonton bioskop'),
+      ('Lainnya', 'pengeluaran', 75000, 27, false, 'Kado ulang tahun')
+    ) as v(kat, tipe, jumlah, hari, tetap, ket)
+    join categories c on c.user_id = p_uid and c.nama = v.kat and c.tipe = v.tipe::tipe_transaksi;
+  end loop;
+
+  insert into budgets (user_id, category_id, bulan, tahun, batas)
+  select p_uid, c.id, extract(month from current_date)::smallint, extract(year from current_date)::smallint, v.batas
+  from (values ('Makanan', 900000), ('Transportasi', 400000), ('Hiburan', 150000)) as v(kat, batas)
+  join categories c on c.user_id = p_uid and c.nama = v.kat and c.tipe = 'pengeluaran';
+end $$;
+
+-- Hapus akun tamu yang umurnya lebih dari 1 hari (transaksi dihapus dulu karena FK kategori RESTRICT).
+create or replace function public.hapus_tamu_demo() returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  delete from transactions where user_id in
+    (select id from auth.users where is_anonymous and created_at < now() - interval '1 day');
+  delete from auth.users where is_anonymous and created_at < now() - interval '1 day';
+end $$;
+
+-- Hanya dipanggil trigger / jadwal, tidak boleh dari aplikasi.
+revoke execute on function public.seed_demo(uuid), public.hapus_tamu_demo() from public, anon, authenticated;
 
 -- ------------------------------------------------- Row Level Security
 alter table public.profiles     enable row level security;

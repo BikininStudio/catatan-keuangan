@@ -82,3 +82,6 @@ body.guest main { width: 100%; max-width: 420px; padding: 0; }
 button.btn { font: inherit; }
 .hidden { display: none !important; }
 #topbar .who { margin-right: 4px; }
+.demo-box { margin-top: 12px; text-align: center; }
+.demo-box .btn { width: 100%; }
+.demo-box .muted { font-size: .85rem; margin: 8px 0 0; }

@@ -1,4 +1,4 @@
-import { login } from '../auth.js';
+import { login, loginDemo } from '../auth.js';
 import { page, goto, showFlash } from '../ui.js';
 
 export async function render() {
@@ -8,7 +8,11 @@ export async function render() {
       <label>Password <input type="password" name="password" required></label>
       <button class="btn" type="submit">Masuk</button>
       <p class="muted">Belum punya akun? <a href="#/register">Daftar</a></p>
-    </form>`, { guest: true });
+    </form>
+    <div class="card form demo-box">
+      <button class="btn btn-ghost" id="btn-demo" type="button">Coba demo tanpa daftar</button>
+      <p class="muted">Langsung masuk dengan data contoh. Data demo terhapus otomatis setelah 1 hari.</p>
+    </div>`, { guest: true });
 
   document.getElementById('f').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -25,4 +29,18 @@ export async function render() {
       btn.disabled = false;
     }
   });
+
+  const demo = document.getElementById('btn-demo');
+  demo.addEventListener('click', async () => {
+    demo.disabled = true;
+    try {
+      await loginDemo();
+      goto('dashboard');
+    } catch (err) {
+      showFlash('error', err.message);
+      demo.disabled = false;
+    }
+  });
+  // Link dari portofolio (…/?demo=1) langsung masuk mode demo.
+  if (new URLSearchParams(location.search).has('demo')) demo.click();
 }

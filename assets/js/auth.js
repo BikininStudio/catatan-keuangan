@@ -45,6 +45,15 @@ export async function login(email, password) {
   touch();
 }
 
+// Mode demo: akun tamu anonim (Supabase Anonymous Sign-in). Tiap pengunjung dapat data contoh
+// sendiri (diisi trigger handle_new_user) dan akun tamu dihapus otomatis oleh hapus_tamu_demo().
+export async function loginDemo() {
+  const { data, error } = await sb.auth.signInAnonymously({ options: { data: { nama: 'Tamu Demo' } } });
+  if (error) throw new Error('Mode demo sedang tidak tersedia. Coba lagi nanti.');
+  user = data.user;
+  touch();
+}
+
 // Mengembalikan true bila akun langsung aktif, false bila perlu konfirmasi email.
 export async function register(namaLengkap, email, password) {
   const { data, error } = await sb.auth.signUp({ email, password, options: { data: { nama: namaLengkap } } });
