@@ -1,5 +1,7 @@
 # Aplikasi Pencatatan Keuangan Pribadi Berbasis Web (GitHub Pages + Supabase)
 
+
+**Aplikasi online:** https://bikininstudio.github.io/catatan-keuangan/
 Frontend statis (HTML/CSS/JavaScript) di GitHub Pages. Database dan autentikasi di Supabase
 (PostgreSQL + Auth + Row Level Security).
 
