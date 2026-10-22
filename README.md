@@ -41,6 +41,16 @@ jadi tidak saling melihat atau mengacak data orang lain. Link `.../?demo=1` lang
 4. Opsional, bila ada yang menyalahgunakan: **Authentication -> Rate Limits** (batas sign-in anonim per jam),
    atau pasang CAPTCHA di **Authentication -> Attack Protection**.
 
+## 6. Instal sebagai aplikasi (PWA)
+Aplikasi bisa dipasang seperti aplikasi biasa, dengan ikon sendiri dan jendela tanpa address bar:
+- **Laptop (Chrome/Edge):** klik ikon **Instal** di ujung address bar.
+- **Android (Chrome):** menu ⋮ -> **Instal aplikasi** / **Tambahkan ke layar utama**.
+- **iPhone (Safari):** tombol Bagikan -> **Tambah ke Layar Utama**.
+
+File PWA: `manifest.webmanifest`, `sw.js`, dan folder `icons/`. Service worker cuma menyimpan file aplikasi;
+data keuangan (Supabase) selalu diambil langsung dari internet dan tidak disimpan di cache.
+Kalau menambah file JS baru, tambahkan juga ke daftar `SHELL` di `sw.js` dan naikkan nomor `CACHE`.
+
 ## Keamanan
 - Anon key memang publik; data dilindungi **Row Level Security**: setiap tabel hanya bisa dibaca/diubah pemilik baris (`user_id = auth.uid()`).
 - Output di-escape (anti XSS), password di-hash oleh Supabase Auth, sesi berakhir setelah 30 menit tidak aktif.
